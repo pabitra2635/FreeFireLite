@@ -414,7 +414,8 @@
             <div class="panel">
                 <h1>PolyFire</h1>
                 <p>Real-Time Multiplayer</p>
-                <input type="text" id="username-input" placeholder="Enter Codename" maxlength="12">
+                <!-- UPDATED: Added autofocus and visual cue -->
+                <input type="text" id="username-input" placeholder="ENTER YOUR NAME" maxlength="12" style="border: 2px solid var(--primary);">
                 <input type="text" id="room-input" placeholder="Room ID (e.g. Arena1)" value="Arena1">
                 <button id="btn-join">DEPLOY</button>
             </div>
@@ -629,6 +630,36 @@
         window.addEventListener('resize', onWindowResize, false);
     }
 
+    // --- HELPER: NAME LABELS ---
+    function createNameLabel(text) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 256;
+        canvas.height = 64;
+        
+        // Background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 256, 64, 10);
+        ctx.fill();
+        
+        // Text
+        ctx.font = 'bold 36px Arial';
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, 128, 32);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+        const sprite = new THREE.Sprite(spriteMat);
+        
+        sprite.position.y = 2.8; // Position above head
+        sprite.scale.set(2, 0.5, 1); // Scale to aspect ratio
+        
+        return sprite;
+    }
+
     // --- CHARACTER CREATION HELPERS ---
     function createHumanoidModel(color) {
         const group = new THREE.Group();
@@ -731,6 +762,10 @@
         character.head.userData.id = id;
         character.torso.userData.id = id;
         
+        // Add Name Label
+        const label = createNameLabel(data.username || "Unknown");
+        character.mesh.add(label);
+
         // Add to scene
         scene.add(character.mesh);
         
@@ -926,8 +961,17 @@
 
     // --- NETWORK LOGIC ---
     async function joinGame() {
-        username = document.getElementById('username-input').value || "Soldier";
-        roomId = document.getElementById('room-input').value || "Arena1";
+        const nameInput = document.getElementById('username-input');
+        const roomInput = document.getElementById('room-input');
+
+        if (!nameInput.value.trim()) {
+            alert("Please enter your name to start!");
+            nameInput.focus();
+            return;
+        }
+
+        username = nameInput.value.trim();
+        roomId = roomInput.value || "Arena1";
 
         // Initialize audio on user gesture
         if (!audioCtx) {
