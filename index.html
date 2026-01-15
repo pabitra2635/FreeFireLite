@@ -414,9 +414,7 @@
             <div class="panel">
                 <h1>PolyFire</h1>
                 <p>Real-Time Multiplayer</p>
-                <!-- UPDATED: Added autofocus and visual cue -->
                 <input type="text" id="username-input" placeholder="ENTER YOUR NAME" maxlength="12" style="border: 2px solid var(--primary);">
-                <!-- Removed Room ID Input -->
                 <button id="btn-join">DEPLOY</button>
             </div>
         </div>
@@ -461,7 +459,7 @@
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, deleteDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -509,7 +507,7 @@
         color: new THREE.Color().setHSL(Math.random(), 0.8, 0.5).getHex()
     };
     
-    const remotePlayers = {}; // id -> { mesh, parts: {}, targetPos, targetRot, lastUpdate }
+    const remotePlayers = {}; // id -> { mesh, parts: {}, targetPos, targetRot, lastUpdate, lastFired }
     const bullets = [];
     const colliders = []; // Walls, floor
     
@@ -777,7 +775,8 @@
             },
             targetPos: new THREE.Vector3(),
             targetRot: new THREE.Quaternion(),
-            data: data
+            data: data,
+            lastFired: 0
         };
         
         console.log("Player joined:", data.username);
@@ -1032,8 +1031,9 @@
                     z: Number(pos.z.toFixed(2)),
                     ry: Number(rot.toFixed(2)),
                     hr: Number(headRot.toFixed(2)),
-                    color: localPlayer.color, // Sync color to server
+                    color: localPlayer.color, 
                     hp: localPlayer.hp,
+                    lastFired: localPlayer.lastShot, // Sync shooting time
                     ts: serverTimestamp()
                 }, { merge: true });
             } catch (e) {
@@ -1048,15 +1048,12 @@
                 const pid = change.doc.id;
                 
                 if (pid === localPlayerId) {
-                    // Check if *server* thinks I took damage (simple cheat for this demo)
-                    // In a real app, listen to a separate 'events' collection
+                    // Check if *server* thinks I took damage
                     if (data.dmgEvent) {
-                        // We received damage processed by someone else? 
-                        // Actually, for this demo, let's have clients write directly to the victim's doc
                         if (data.hp < localPlayer.hp) {
                             localPlayer.hp = data.hp;
                             updateHealthUI();
-                            playSound('hit'); // Taking damage sound
+                            playSound('hit'); 
                             
                             if (localPlayer.hp <= 0 && !localPlayer.isDead) {
                                 die(data.lastAttacker);
@@ -1073,12 +1070,22 @@
                     if (remotePlayers[pid]) {
                         const p = remotePlayers[pid];
                         p.targetPos.set(data.x, data.y, data.z);
-                        // p.targetRot.setFromEuler(new THREE.Euler(0, data.ry, 0)); // Only Y
-                        p.mesh.rotation.y = data.ry; // Snap rotation for now
-                        p.data = data;
+                        p.mesh.rotation.y = data.ry;
                         
-                        // Simple animation for remote players: if they moved far enough since last frame, animate legs
-                        // (Requires storing previous pos, omitted for simplicity, they will just slide for now)
+                        // Check if opponent fired
+                        if (data.lastFired && data.lastFired > p.lastFired) {
+                             p.lastFired = data.lastFired;
+                             playSound('shoot'); // Play remote shot sound
+                             // Visual trace from their gun (approximated from body position + rotation)
+                             const gunOffset = new THREE.Vector3(0.5, 1.0, 0.5).applyAxisAngle(new THREE.Vector3(0,1,0), data.ry);
+                             const start = new THREE.Vector3(data.x, data.y, data.z).add(gunOffset);
+                             const forward = new THREE.Vector3(0,0,1).applyAxisAngle(new THREE.Vector3(0,1,0), data.ry);
+                             // Slight random spread for visual flair
+                             const end = start.clone().add(forward.multiplyScalar(20));
+                             createBulletTrace(start, end);
+                        }
+
+                        p.data = data;
                     }
                 }
                 if (change.type === "removed") {
@@ -1095,31 +1102,21 @@
     async function dealDamage(targetId, amount) {
         // Fetch target current HP first to ensure consistency (basic)
         const targetRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomId, 'players', targetId);
-        // We do a transaction or just a blind update. Blind update for speed in prototype.
-        // We set 'dmgEvent' trigger so the client knows to update local state
+
         try {
-            // Need to get current hp first in a real app, but here we assume...
-            // Actually, Firebase `increment` is best, but we track HP. 
-            // We will just write a specific field that says "I hit you".
-            // Since we can't easily do server-side logic, we will trust the victim to sync HP?
-            // NO. The shooter updates the victim's HP in Firestore.
+            // ATOMIC INCREMENT: More reliable on mobile networks
+            await updateDoc(targetRef, {
+                hp: increment(-amount),
+                dmgEvent: Date.now(),
+                lastAttacker: username
+            });
+            // We do not check hp here, we wait for the listener to update the victim
+            // or the victim to die.
             
-            const snap = await getDoc(targetRef);
-            if (snap.exists()) {
-                let newHp = snap.data().hp - amount;
-                if (newHp < 0) newHp = 0;
-                
-                await updateDoc(targetRef, {
-                    hp: newHp,
-                    dmgEvent: Date.now(),
-                    lastAttacker: username
-                });
-                
-                if (newHp === 0) {
-                    addFeedItem(`${username} eliminated ${snap.data().username}`);
-                }
-            }
-        } catch(e) { console.log(e); }
+            // To be optimistic, we could visually show damage numbers here?
+            // For now, hit marker is enough.
+
+        } catch(e) { console.log("Error dealing damage:", e); }
     }
 
     function die(killerName) {
