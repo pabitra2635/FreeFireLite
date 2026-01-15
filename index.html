@@ -764,7 +764,8 @@
         const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), mesh.rotation.y);
         
         const moveVec = new THREE.Vector3();
-        moveVec.addScaledVector(forward, inputs.move.y); 
+        // IMPORTANT: Invert Y for correct forward/backward movement mapping
+        moveVec.addScaledVector(forward, -inputs.move.y); 
         moveVec.addScaledVector(right, inputs.move.x);
         
         if (moveVec.length() > 0) moveVec.normalize();
@@ -1114,8 +1115,70 @@
         updateDoc(myRef, { hp: 200 });
     }
 
-    // --- INPUT HANDLING (Touch) ---
+    // --- INPUT HANDLING (PC & Touch) ---
     function initInputs() {
+        // --- PC CONTROLS (Pointer Lock & Mouse Look) ---
+        // Click to lock cursor
+        document.addEventListener('click', (e) => {
+            // Only lock if we are clicking on game container/canvas
+            if (e.target.id === 'game-container' || e.target.tagName === 'CANVAS') {
+                document.body.requestPointerLock();
+            }
+        });
+
+        // Mouse Move Listener
+        document.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement === document.body) {
+                // Add to inputs.look directly. Dampening in update loop will handle smooth stop.
+                // We use a small multiplier to match touch sensitivity
+                inputs.look.x += e.movementX * 0.5; 
+                inputs.look.y += e.movementY * 0.5;
+            }
+        });
+
+        // Mouse Down/Up (Fire/ADS)
+        document.addEventListener('mousedown', (e) => {
+            if (document.pointerLockElement === document.body) {
+                if(e.button === 0) inputs.fire = true; // Left Click
+                if(e.button === 2) inputs.ads = true;  // Right Click
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if(e.button === 0) inputs.fire = false;
+            if(e.button === 2) inputs.ads = false;
+        });
+
+        // Prevent context menu on right click
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
+        // Keyboard (WASD)
+        window.addEventListener('keydown', (e) => {
+            // Use e.code to be layout independent
+            switch(e.code) {
+                case 'KeyW': inputs.move.y = -1; break; // Forward (Negative Y is forward in our logic now)
+                case 'KeyS': inputs.move.y = 1; break;  // Backward
+                case 'KeyA': inputs.move.x = -1; break; // Left
+                case 'KeyD': inputs.move.x = 1; break;  // Right
+                case 'Space': inputs.jump = true; break;
+                case 'KeyR': 
+                     localPlayer.ammo = GAME_CONFIG.WEAPON.ammo;
+                     updateAmmoUI();
+                     break;
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            switch(e.code) {
+                case 'KeyW': 
+                case 'KeyS': inputs.move.y = 0; break;
+                case 'KeyA': 
+                case 'KeyD': inputs.move.x = 0; break;
+                case 'Space': inputs.jump = false; break;
+            }
+        });
+
+        // --- TOUCH CONTROLS (Mobile Fallback) ---
         // Joystick (Move)
         const zoneMove = document.getElementById('zone-move');
         const stickBase = document.getElementById('joystick-base');
@@ -1232,23 +1295,6 @@
             localPlayer.ammo = GAME_CONFIG.WEAPON.ammo;
             updateAmmoUI();
         });
-
-        // PC Fallback (for testing)
-        window.addEventListener('keydown', (e) => {
-            switch(e.key.toLowerCase()) {
-                case 'w': inputs.move.y = -1; break;
-                case 's': inputs.move.y = 1; break;
-                case 'a': inputs.move.x = -1; break;
-                case 'd': inputs.move.x = 1; break;
-                case ' ': inputs.jump = true; break;
-            }
-        });
-        window.addEventListener('keyup', (e) => {
-            switch(e.key.toLowerCase()) {
-                case 'w': case 's': inputs.move.y = 0; break;
-                case 'a': case 'd': inputs.move.x = 0; break;
-            }
-        });
     }
 
     // --- MAIN LOOP ---
@@ -1278,13 +1324,12 @@
 
             // Input Reset (Mouse look delta needs reset every frame)
             if (!('ontouchstart' in window)) {
-                // PC only logic if we added pointer lock, ignoring for mobile-first request
+                // Dampen mouse look significantly to prevent spinning
+                inputs.look.x *= 0.1;
+                inputs.look.y *= 0.1;
             } else {
-                // Mobile look delta is instantaneous touchmove difference, 
-                // we consume it in updatePlayer, then zero it here?
-                // Actually, touchmove event fires continuously. 
-                // Better approach for smooth look:
-                inputs.look.x *= 0.5; // Dampen look
+                // Mobile look dampening
+                inputs.look.x *= 0.5; 
                 inputs.look.y *= 0.5; 
             }
 
