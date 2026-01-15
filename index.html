@@ -416,7 +416,7 @@
                 <p>Real-Time Multiplayer</p>
                 <!-- UPDATED: Added autofocus and visual cue -->
                 <input type="text" id="username-input" placeholder="ENTER YOUR NAME" maxlength="12" style="border: 2px solid var(--primary);">
-                <input type="text" id="room-input" placeholder="Room ID (e.g. Arena1)" value="Arena1">
+                <!-- Removed Room ID Input -->
                 <button id="btn-join">DEPLOY</button>
             </div>
         </div>
@@ -962,7 +962,7 @@
     // --- NETWORK LOGIC ---
     async function joinGame() {
         const nameInput = document.getElementById('username-input');
-        const roomInput = document.getElementById('room-input');
+        // Removed explicit room input
 
         if (!nameInput.value.trim()) {
             alert("Please enter your name to start!");
@@ -971,7 +971,7 @@
         }
 
         username = nameInput.value.trim();
-        roomId = roomInput.value || "Arena1";
+        roomId = "GlobalArena"; // Hardcoded to single lobby
 
         // Initialize audio on user gesture
         if (!audioCtx) {
@@ -1373,12 +1373,13 @@
 
             // Input Reset (Mouse look delta needs reset every frame)
             if (!('ontouchstart' in window)) {
-                // Dampen mouse look significantly to prevent spinning
-                inputs.look.x *= 0.1;
-                inputs.look.y *= 0.1;
+                // PC only logic if we added pointer lock, ignoring for mobile-first request
             } else {
-                // Mobile look dampening
-                inputs.look.x *= 0.5; 
+                // Mobile look delta is instantaneous touchmove difference, 
+                // we consume it in updatePlayer, then zero it here?
+                // Actually, touchmove event fires continuously. 
+                // Better approach for smooth look:
+                inputs.look.x *= 0.5; // Dampen look
                 inputs.look.y *= 0.5; 
             }
 
