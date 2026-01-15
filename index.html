@@ -503,7 +503,9 @@
         hp: GAME_CONFIG.MAX_HP,
         ammo: GAME_CONFIG.WEAPON.ammo,
         lastShot: 0,
-        isDead: false
+        isDead: false,
+        // Generate a random bright color for this session
+        color: new THREE.Color().setHSL(Math.random(), 0.8, 0.5).getHex()
     };
     
     const remotePlayers = {}; // id -> { mesh, parts: {}, targetPos, targetRot, lastUpdate }
@@ -700,8 +702,8 @@
     }
 
     function createLocalPlayer() {
-        // Create model
-        const character = createHumanoidModel(0x00ff00); // Green for local
+        // Create model using our generated session color
+        const character = createHumanoidModel(localPlayer.color);
         
         // Setup references
         localPlayer.mesh = character.mesh;
@@ -722,7 +724,9 @@
     }
 
     function createRemotePlayer(id, data) {
-        const character = createHumanoidModel(0xff0000); // Red for enemies
+        // Use the color sent by the remote player, or default to red if missing
+        const color = data.color || 0xff0000;
+        const character = createHumanoidModel(color);
 
         character.head.userData.id = id;
         character.torso.userData.id = id;
@@ -984,6 +988,7 @@
                     z: Number(pos.z.toFixed(2)),
                     ry: Number(rot.toFixed(2)),
                     hr: Number(headRot.toFixed(2)),
+                    color: localPlayer.color, // Sync color to server
                     hp: localPlayer.hp,
                     ts: serverTimestamp()
                 }, { merge: true });
