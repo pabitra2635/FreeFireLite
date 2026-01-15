@@ -3,28 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PolyFire: Mobile Battle Royale</title>
+    <title>PolyFire: Mobile Battle Royale (RTDB)</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     
     <style>
         :root {
-            --primary: #ff9800;
-            --danger: #f44336;
-            --hud-bg: rgba(0, 0, 0, 0.5);
+            --primary: #00e5ff;
+            --danger: #ff4081;
+            --hud-bg: rgba(0, 0, 0, 0.6);
         }
         
         * {
             box-sizing: border-box;
             user-select: none;
             -webkit-user-select: none;
-            touch-action: none; /* Critical for mobile games */
+            touch-action: none; 
         }
 
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #1a1a1a;
+            background-color: #121212;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: white;
             height: 100vh;
@@ -48,12 +48,10 @@
             width: 100%;
             height: 100%;
             z-index: 10;
-            pointer-events: none; /* Let touches pass through to controls */
+            pointer-events: none; 
         }
 
-        .pointer-events-auto {
-            pointer-events: auto;
-        }
+        .pointer-events-auto { pointer-events: auto; }
 
         /* --- LOBBY SCREEN --- */
         #lobby-screen {
@@ -62,7 +60,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #1e2024 0%, #0d0e10 100%);
+            background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -72,97 +70,99 @@
         }
 
         .panel {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 2rem;
-            border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
             max-width: 90%;
             width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        h1 { margin: 0 0 1rem 0; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; }
+        h1 { margin: 0 0 0.5rem 0; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; font-size: 2rem; }
+        p { color: #8899ac; margin-bottom: 2rem; }
         
         input {
             width: 100%;
-            padding: 12px;
+            padding: 15px;
             margin: 10px 0;
             border-radius: 8px;
-            border: none;
-            background: rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.3);
             color: white;
             font-size: 16px;
+            text-align: center;
+            transition: border-color 0.3s;
         }
+        input:focus { border-color: var(--primary); outline: none; }
 
         button {
             width: 100%;
             padding: 15px;
-            margin-top: 10px;
+            margin-top: 20px;
             border-radius: 8px;
             border: none;
             background: var(--primary);
             color: black;
-            font-weight: bold;
-            font-size: 18px;
+            font-weight: 800;
+            font-size: 16px;
             cursor: pointer;
-            transition: transform 0.1s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.1s, background 0.3s;
         }
 
         button:active { transform: scale(0.95); }
+        button:hover { background: #00b8cc; }
 
-        /* --- HUD --- */
-        #hud {
-            display: none; /* Hidden by default */
-            width: 100%;
-            height: 100%;
+        #status-msg {
+            margin-top: 15px;
+            color: #ff4081;
+            font-size: 12px;
+            min-height: 20px;
         }
 
-        /* Top Bar */
+        /* --- HUD --- */
+        #hud { display: none; width: 100%; height: 100%; }
+
         .top-bar {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
+            top: 20px;
+            left: 20px;
+            right: 20px;
             display: flex;
             justify-content: space-between;
         }
 
         .stat-box {
             background: var(--hud-bg);
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 14px;
             font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         #health-bar-container {
             position: absolute;
-            top: 10px;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 200px;
-            height: 24px;
-            background: #333;
-            border: 2px solid #555;
-            border-radius: 12px;
+            width: 240px;
+            height: 20px;
+            background: #222;
+            border-radius: 10px;
             overflow: hidden;
+            border: 1px solid #444;
         }
 
         #health-fill {
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, #ff5252, #ff1744);
-            transition: width 0.2s;
-        }
-
-        #health-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            line-height: 20px;
-            font-size: 12px;
-            text-shadow: 1px 1px 1px black;
+            background: linear-gradient(90deg, #ff1744, #d50000);
+            transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* Crosshair */
@@ -178,8 +178,8 @@
         #crosshair::before, #crosshair::after {
             content: '';
             position: absolute;
-            background: white;
-            box-shadow: 0 0 2px black;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 4px black;
         }
         #crosshair::before { top: 11px; left: 0; width: 24px; height: 2px; }
         #crosshair::after { top: 0; left: 11px; width: 2px; height: 24px; }
@@ -187,25 +187,27 @@
         /* Kill Feed */
         #kill-feed {
             position: absolute;
-            top: 50px;
-            right: 10px;
-            width: 200px;
+            top: 60px;
+            right: 20px;
+            width: 250px;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 8px;
             pointer-events: none;
+            align-items: flex-end;
         }
         .feed-item {
-            background: rgba(0,0,0,0.6);
+            background: linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,0.8));
             color: white;
-            font-size: 12px;
-            padding: 4px 8px;
+            font-size: 13px;
+            padding: 6px 12px;
             border-radius: 4px;
-            text-align: right;
-            animation: fadeOut 4s forwards;
+            border-right: 3px solid var(--danger);
+            animation: fadeOut 5s forwards;
         }
         @keyframes fadeOut {
-            0% { opacity: 1; }
+            0% { opacity: 0; transform: translateX(20px); }
+            10% { opacity: 1; transform: translateX(0); }
             80% { opacity: 1; }
             100% { opacity: 0; display: none; }
         }
@@ -219,36 +221,19 @@
             height: 100%;
             z-index: 20;
             pointer-events: auto;
-            display: none; /* Hidden until game starts */
+            display: none; 
         }
 
-        /* Touch Zones */
-        #zone-move {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 40%;
-            height: 50%;
-            /* background: rgba(0,255,0,0.1); Debugging */
-        }
+        #zone-move { position: absolute; bottom: 0; left: 0; width: 40%; height: 50%; }
+        #zone-aim { position: absolute; top: 0; right: 0; width: 60%; height: 100%; }
 
-        #zone-aim {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 60%;
-            height: 100%;
-            /* background: rgba(0,0,255,0.1); Debugging */
-        }
-
-        /* Virtual Joystick UI */
         #joystick-base {
             position: absolute;
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
             display: none;
             pointer-events: none;
         }
@@ -256,107 +241,76 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.8);
             transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
 
-        /* Action Buttons */
         .btn-action {
             position: absolute;
             border-radius: 50%;
-            background: rgba(0,0,0,0.5);
-            border: 2px solid rgba(255,255,255,0.4);
+            background: rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.3);
             color: white;
             display: flex;
             justify-content: center;
             align-items: center;
             font-weight: bold;
-            pointer-events: auto; /* Buttons need to catch events */
+            pointer-events: auto;
+            backdrop-filter: blur(4px);
+            transition: background 0.1s;
         }
-        
-        .btn-action:active { background: rgba(255,255,255,0.3); }
+        .btn-action:active { background: rgba(255,255,255,0.2); transform: scale(0.95); }
 
         #btn-fire {
             bottom: 60px;
             right: 30px;
-            width: 70px;
-            height: 70px;
-            background: rgba(255, 82, 82, 0.5);
-            border-color: #ff5252;
-            font-size: 12px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 64, 129, 0.4);
+            border-color: #ff4081;
+            font-size: 14px;
         }
 
-        #btn-jump {
-            bottom: 140px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            font-size: 10px;
-        }
+        #btn-jump { bottom: 160px; right: 30px; width: 60px; height: 60px; font-size: 12px; }
+        #btn-reload { bottom: 30px; right: 130px; width: 50px; height: 50px; font-size: 10px; }
+        #btn-scope { bottom: 130px; right: 110px; width: 50px; height: 50px; font-size: 10px; }
 
-        #btn-reload {
-            bottom: 30px;
-            right: 120px;
-            width: 50px;
-            height: 50px;
-            font-size: 10px;
-        }
-        
-        #btn-scope {
-            bottom: 110px;
-            right: 100px;
-            width: 45px;
-            height: 45px;
-            font-size: 10px;
-        }
-
-        /* Hit Marker */
         #hit-marker {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) rotate(45deg);
-            width: 20px;
-            height: 20px;
+            width: 30px;
+            height: 30px;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.1s;
         }
-        #hit-marker::before, #hit-marker::after {
-            content: '';
-            position: absolute;
-            background: red;
-        }
-        #hit-marker::before { top: 9px; left: 0; width: 20px; height: 2px; }
-        #hit-marker::after { top: 0; left: 9px; width: 2px; height: 20px; }
+        #hit-marker::before, #hit-marker::after { content: ''; position: absolute; background: #ff4081; box-shadow: 0 0 5px #ff4081; }
+        #hit-marker::before { top: 14px; left: 0; width: 30px; height: 3px; }
+        #hit-marker::after { top: 0; left: 14px; width: 3px; height: 30px; }
 
-        /* Respawn Overlay */
         #respawn-screen {
             display: none;
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(100, 0, 0, 0.7);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(20, 0, 0, 0.85);
             z-index: 50;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             pointer-events: auto;
+            backdrop-filter: blur(5px);
         }
 
-        /* --- ORIENTATION WARNING --- */
         #rotate-warning {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: #000;
             z-index: 9999;
             flex-direction: column;
@@ -365,80 +319,56 @@
             color: var(--primary);
             text-align: center;
         }
-
-        @media screen and (orientation: portrait) {
-            #rotate-warning { display: flex; }
-        }
-
+        @media screen and (orientation: portrait) { #rotate-warning { display: flex; } }
     </style>
     
-    <!-- Dependencies -->
+    <!-- Three.js 0.160 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
 </head>
 <body>
 
-    <!-- Orientation Warning -->
     <div id="rotate-warning">
         <h1 style="font-size: 4rem; margin-bottom: 0;">↻</h1>
-        <h2>PLEASE ROTATE DEVICE</h2>
-        <p>Landscape mode required</p>
+        <h2>ROTATE DEVICE</h2>
+        <p>Landscape Mode Required</p>
     </div>
 
-    <!-- 3D Canvas -->
     <div id="game-container"></div>
 
-    <!-- UI Overlay -->
     <div id="ui-layer">
-        
-        <!-- Crosshair -->
         <div id="crosshair"></div>
         <div id="hit-marker"></div>
 
-        <!-- HUD -->
         <div id="hud">
             <div class="top-bar">
                 <div class="stat-box">FPS: <span id="fps-counter">60</span></div>
-                <div class="stat-box" id="ammo-display">30 / 120</div>
+                <div class="stat-box" id="ammo-display">30 / ∞</div>
             </div>
-            
-            <div id="health-bar-container">
-                <div id="health-fill"></div>
-                <div id="health-text">200 HP</div>
-            </div>
-            
+            <div id="health-bar-container"><div id="health-fill"></div></div>
             <div id="kill-feed"></div>
         </div>
 
-        <!-- Lobby -->
         <div id="lobby-screen">
             <div class="panel">
-                <h1>PolyFire</h1>
-                <p>Real-Time Multiplayer</p>
-                <input type="text" id="username-input" placeholder="ENTER YOUR NAME" maxlength="12" style="border: 2px solid var(--primary);">
-                <button id="btn-join">DEPLOY</button>
+                <h1>POLYFIRE</h1>
+                <p>REAL-TIME SERVER EDITION</p>
+                <input type="text" id="username-input" placeholder="CODENAME" maxlength="12">
+                <button id="btn-join">CONNECT</button>
+                <div id="status-msg"></div>
             </div>
         </div>
 
-        <!-- Respawn -->
         <div id="respawn-screen">
-            <h1 style="color:red">KIA</h1>
-            <p id="killer-msg">Eliminated by ???</p>
-            <button id="btn-respawn" style="background: white; color: black; width: 200px;">RESPAWN (5s)</button>
+            <h1 style="color: #ff4081; font-size: 3rem; margin:0;">ELIMINATED</h1>
+            <p id="killer-msg" style="color: #ccc; font-size: 1.2rem;">by Unknown</p>
+            <button id="btn-respawn" style="background: white; color: black; width: 220px; margin-top:30px;">RESPAWN (5s)</button>
         </div>
     </div>
 
-    <!-- Controls Layer (Touch) -->
     <div id="controls-layer">
-        <!-- Touch Zones -->
         <div id="zone-move"></div>
         <div id="zone-aim"></div>
-        
-        <!-- Visual Joystick -->
-        <div id="joystick-base">
-            <div id="joystick-stick"></div>
-        </div>
-
-        <!-- Buttons -->
+        <div id="joystick-base"><div id="joystick-stick"></div></div>
         <div id="btn-fire" class="btn-action">FIRE</div>
         <div id="btn-jump" class="btn-action">JUMP</div>
         <div id="btn-reload" class="btn-action">R</div>
@@ -446,7 +376,7 @@
     </div>
 
 <script type="module">
-    // --- FIREBASE CONFIGURATION ---
+    // --- FIREBASE REALTIME DATABASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyAIK1h8MQw2SzYAcfPnb4ThqBYq8p5skF8",
         authDomain: "flyingmodi.firebaseapp.com",
@@ -454,990 +384,642 @@
         storageBucket: "flyingmodi.firebasestorage.app",
         messagingSenderId: "313784310367",
         appId: "1:313784310367:web:3db52f84943b98ae8b99ea",
-        measurementId: "G-78CS1X69YG"
+        measurementId: "G-78CS1X69YG",
+        // Using correct default RTDB URL format. If your DB is in a different region, update this.
+        databaseURL: "https://flyingmodi-default-rtdb.firebaseio.com" 
     };
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, deleteDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    // Using stable 10.7.1 version
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, set, onValue, update, remove, onDisconnect, push, child, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'polyfire-game';
+    const db = getDatabase(app); 
 
     // --- GAME CONSTANTS ---
     const GAME_CONFIG = {
-        MAX_HP: 200,
+        MAX_HP: 100, 
         MOVE_SPEED: 8,
         SPRINT_SPEED: 14,
         JUMP_FORCE: 12,
         GRAVITY: 25,
         SENSITIVITY: 0.003,
-        INTERPOLATION_MS: 150, // Buffer for network lag
-        SYNC_RATE: 100, // Sync to DB every 100ms
         WEAPON: {
-            damageBody: 20,
-            damageHead: 50,
-            fireRate: 100, // ms between shots
+            damageBody: 15,
+            damageHead: 40,
+            fireRate: 100,
             range: 1000,
-            ammo: 30,
-            spread: 0.02
+            ammo: 30
         }
     };
 
     // --- GLOBAL STATE ---
-    let currentUser = null;
     let username = "Guest";
-    let roomId = "Arena1";
     let isGameActive = false;
     let localPlayerId = null;
     let camera, scene, renderer;
+    
     let localPlayer = {
         mesh: null,
         head: null,
-        parts: {}, // References to legs for animation
+        parts: {},
         velocity: new THREE.Vector3(),
         isGrounded: false,
         hp: GAME_CONFIG.MAX_HP,
         ammo: GAME_CONFIG.WEAPON.ammo,
         lastShot: 0,
         isDead: false,
-        // Generate a random bright color for this session
         color: new THREE.Color().setHSL(Math.random(), 0.8, 0.5).getHex()
     };
     
-    const remotePlayers = {}; // id -> { mesh, parts: {}, targetPos, targetRot, lastUpdate, lastFired }
-    const bullets = [];
-    const colliders = []; // Walls, floor
+    const remotePlayers = {}; 
+    const colliders = []; 
     
-    // Inputs
     const inputs = {
-        move: { x: 0, y: 0 }, // Joystick
-        look: { x: 0, y: 0 }, // Touchpad
-        fire: false,
-        jump: false,
-        ads: false
+        move: { x: 0, y: 0 },
+        look: { x: 0, y: 0 },
+        fire: false, jump: false, ads: false
     };
 
-    // --- AUDIO SYSTEM (Synthesized) ---
-    // Initialize AudioContext lazily to avoid auto-play policy errors
+    // --- AUDIO ---
     let audioCtx;
-    
     function playSound(type) {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume().catch(e => console.log("Audio resume failed", e));
-        }
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-
         const now = audioCtx.currentTime;
         
         if (type === 'shoot') {
             osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.setValueAtTime(600, now);
             osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
             gain.gain.setValueAtTime(0.1, now);
             gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-            osc.start(now);
-            osc.stop(now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
         } else if (type === 'hit') {
             osc.type = 'square';
-            osc.frequency.setValueAtTime(1500, now);
+            osc.frequency.setValueAtTime(800, now);
             gain.gain.setValueAtTime(0.1, now);
             gain.gain.linearRampToValueAtTime(0, now + 0.05);
-            osc.start(now);
-            osc.stop(now + 0.05);
-        } else if (type === 'jump') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(150, now);
-            osc.frequency.linearRampToValueAtTime(300, now + 0.2);
-            gain.gain.setValueAtTime(0.1, now);
-            gain.gain.linearRampToValueAtTime(0, now + 0.2);
-            osc.start(now);
-            osc.stop(now + 0.2);
+            osc.start(now); osc.stop(now + 0.05);
         }
     }
 
-    // --- THREE.JS SETUP ---
+    // --- THREE.JS ENGINE ---
     function init3D() {
         const container = document.getElementById('game-container');
-        
-        // Scene
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB); // Sky blue
-        scene.fog = new THREE.Fog(0x87CEEB, 20, 100);
+        scene.background = new THREE.Color(0x111111);
+        scene.fog = new THREE.Fog(0x111111, 20, 80);
 
-        // Camera
         camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-        
-        // Renderer
-        renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
+        renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         container.appendChild(renderer.domElement);
 
-        // Lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
         scene.add(ambientLight);
-
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
         dirLight.position.set(50, 100, 50);
         dirLight.castShadow = true;
-        dirLight.shadow.mapSize.width = 1024;
-        dirLight.shadow.mapSize.height = 1024;
+        dirLight.shadow.mapSize.set(1024, 1024);
         scene.add(dirLight);
 
-        // Environment (Floor)
+        // Floor
         const floorGeo = new THREE.PlaneGeometry(200, 200);
-        const floorMat = new THREE.MeshStandardMaterial({ 
-            color: 0x333333,
-            roughness: 0.8 
-        });
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
         floor.receiveShadow = true;
         scene.add(floor);
         colliders.push(floor);
-
-        // Obstacles (Random boxes)
-        const boxGeo = new THREE.BoxGeometry(4, 4, 4);
-        const boxMat = new THREE.MeshStandardMaterial({ color: 0x555555 });
         
-        for(let i=0; i<30; i++) {
+        const grid = new THREE.GridHelper(200, 50, 0x444444, 0x333333);
+        scene.add(grid);
+
+        // Obstacles
+        const boxGeo = new THREE.BoxGeometry(4, 4, 4);
+        const boxMat = new THREE.MeshStandardMaterial({ color: 0x444444 });
+        for(let i=0; i<40; i++) {
             const box = new THREE.Mesh(boxGeo, boxMat);
-            box.position.x = (Math.random() - 0.5) * 150;
-            box.position.z = (Math.random() - 0.5) * 150;
-            box.position.y = 2;
+            box.position.set((Math.random()-0.5)*160, 2, (Math.random()-0.5)*160);
             box.castShadow = true;
             box.receiveShadow = true;
             scene.add(box);
             colliders.push(box);
         }
 
-        // Local Player
         createLocalPlayer();
-
-        // Listeners
-        window.addEventListener('resize', onWindowResize, false);
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth/window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     }
 
-    // --- HELPER: NAME LABELS ---
-    function createNameLabel(text) {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = 256;
-        canvas.height = 64;
-        
-        // Background
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-        ctx.beginPath();
-        ctx.roundRect(0, 0, 256, 64, 10);
-        ctx.fill();
-        
-        // Text
-        ctx.font = 'bold 36px Arial';
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(text, 128, 32);
-        
-        const texture = new THREE.CanvasTexture(canvas);
-        const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
-        const sprite = new THREE.Sprite(spriteMat);
-        
-        sprite.position.y = 2.8; // Position above head
-        sprite.scale.set(2, 0.5, 1); // Scale to aspect ratio
-        
-        return sprite;
-    }
-
-    // --- CHARACTER CREATION HELPERS ---
+    // --- PLAYER FACTORY ---
     function createHumanoidModel(color) {
         const group = new THREE.Group();
+        const skinMat = new THREE.MeshStandardMaterial({ color: 0xffccaa });
+        const shirtMat = new THREE.MeshStandardMaterial({ color: color });
+        const pantsMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
 
-        // Materials
-        const skinMat = new THREE.MeshStandardMaterial({ color: 0xffccaa }); // Skin
-        const shirtMat = new THREE.MeshStandardMaterial({ color: color }); // Shirt Color
-        const pantsMat = new THREE.MeshStandardMaterial({ color: 0x222222 }); // Dark pants
-
-        // Head
-        const headGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-        const head = new THREE.Mesh(headGeo, skinMat);
-        head.position.y = 1.65;
-        head.castShadow = true;
-        // Mark as head for damage logic, but wait for ID assignment
-        head.userData = { part: 'head' }; 
+        // Body Parts
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMat);
+        head.position.y = 1.65; head.castShadow = true;
+        head.userData = { part: 'head' };
         group.add(head);
 
-        // Torso
-        const torsoGeo = new THREE.BoxGeometry(0.6, 0.75, 0.3);
-        const torso = new THREE.Mesh(torsoGeo, shirtMat);
-        torso.position.y = 1.0;
-        torso.castShadow = true;
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.75, 0.3), shirtMat);
+        torso.position.y = 1.0; torso.castShadow = true;
         torso.userData = { part: 'body' };
         group.add(torso);
 
-        // Arms
-        const armGeo = new THREE.BoxGeometry(0.18, 0.7, 0.18);
+        const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.7, 0.18), skinMat);
+        leftArm.position.set(-0.4, 1.0, 0); group.add(leftArm);
         
-        const leftArm = new THREE.Mesh(armGeo, skinMat);
-        leftArm.position.set(-0.4, 1.0, 0);
-        leftArm.castShadow = true;
-        group.add(leftArm);
-        
-        const rightArm = new THREE.Mesh(armGeo, skinMat);
-        rightArm.position.set(0.4, 1.0, 0);
-        rightArm.castShadow = true;
-        // Hold Gun Pose (Static for now)
-        rightArm.rotation.x = -0.5;
-        rightArm.position.z = 0.2;
-        group.add(rightArm);
+        const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.7, 0.18), skinMat);
+        rightArm.position.set(0.4, 1.0, 0); rightArm.rotation.x = -0.5; rightArm.position.z = 0.2; group.add(rightArm);
 
-        // Legs
-        const legGeo = new THREE.BoxGeometry(0.22, 0.85, 0.22);
+        const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.85, 0.22), pantsMat);
+        leftLeg.position.set(-0.15, 0.425, 0); group.add(leftLeg);
         
-        const leftLeg = new THREE.Mesh(legGeo, pantsMat);
-        leftLeg.position.set(-0.15, 0.425, 0);
-        leftLeg.castShadow = true;
-        group.add(leftLeg);
-        
-        const rightLeg = new THREE.Mesh(legGeo, pantsMat);
-        rightLeg.position.set(0.15, 0.425, 0);
-        rightLeg.castShadow = true;
-        group.add(rightLeg);
+        const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.85, 0.22), pantsMat);
+        rightLeg.position.set(0.15, 0.425, 0); group.add(rightLeg);
 
         // Gun
-        const gunGeo = new THREE.BoxGeometry(0.1, 0.1, 0.4);
-        const gunMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
-        const gun = new THREE.Mesh(gunGeo, gunMat);
-        gun.position.set(0, -0.3, 0.2); // Attached to right arm
+        const gun = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.6), new THREE.MeshStandardMaterial({ color: 0x111 }));
+        gun.position.set(0, -0.3, 0.3);
         rightArm.add(gun);
 
-        return { 
-            mesh: group, 
-            head: head, 
-            torso: torso, 
-            leftLeg: leftLeg, 
-            rightLeg: rightLeg,
-            leftArm: leftArm,
-            rightArm: rightArm
-        };
+        return { mesh: group, head, leftLeg, rightLeg, leftArm, rightArm };
+    }
+
+    function createNameLabel(text) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 256; canvas.height = 64;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.beginPath(); ctx.roundRect(0, 0, 256, 64, 10); ctx.fill();
+        ctx.font = 'bold 36px Arial'; ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(text, 128, 32);
+        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true }));
+        sprite.position.y = 2.8; sprite.scale.set(2, 0.5, 1);
+        return sprite;
     }
 
     function createLocalPlayer() {
-        // Create model using our generated session color
-        const character = createHumanoidModel(localPlayer.color);
-        
-        // Setup references
-        localPlayer.mesh = character.mesh;
-        localPlayer.head = character.head;
-        localPlayer.parts = {
-            leftLeg: character.leftLeg,
-            rightLeg: character.rightLeg,
-            leftArm: character.leftArm,
-            rightArm: character.rightArm
-        };
-
-        // Add to scene
+        const model = createHumanoidModel(localPlayer.color);
+        localPlayer.mesh = model.mesh;
+        localPlayer.head = model.head;
+        localPlayer.parts = { lLeg: model.leftLeg, rLeg: model.rightLeg, lArm: model.leftArm };
         scene.add(localPlayer.mesh);
-        
-        // Attach camera to head but offset
         localPlayer.head.add(camera);
-        camera.position.set(0, 0, 0); // FPS mode initially for logic, moved in update loop for TPS
+        camera.position.set(0, 0, 0); 
     }
 
     function createRemotePlayer(id, data) {
-        // Use the color sent by the remote player, or default to red if missing
-        const color = data.color || 0xff0000;
-        const character = createHumanoidModel(color);
-
-        // CRITICAL FIX: Tag ALL meshes in the group with the user ID
-        // This ensures shots to arms/legs still register as hitting 'this player'
-        character.mesh.traverse((child) => {
-            if (child.isMesh) {
-                child.userData.id = id;
-            }
-        });
+        if(remotePlayers[id]) return; 
         
-        // Re-apply specific body part tags if traverse overwrote them (though merge usually keeps props)
-        character.head.userData.part = 'head'; // Ensure headshot logic still works
+        const model = createHumanoidModel(data.color || 0xff0000);
+        model.mesh.traverse(c => { if(c.isMesh) c.userData.id = id; }); 
+        model.head.userData.part = 'head'; 
 
-        // Add Name Label
-        const label = createNameLabel(data.username || "Unknown");
-        character.mesh.add(label);
+        model.mesh.add(createNameLabel(data.username));
+        scene.add(model.mesh);
 
-        // Add to scene
-        scene.add(character.mesh);
-        
         remotePlayers[id] = {
-            mesh: character.mesh,
-            parts: {
-                leftLeg: character.leftLeg,
-                rightLeg: character.rightLeg
-            },
-            targetPos: new THREE.Vector3(),
-            targetRot: new THREE.Quaternion(),
-            data: data,
-            lastFired: 0
+            mesh: model.mesh,
+            parts: { lLeg: model.leftLeg, rLeg: model.rightLeg },
+            targetPos: new THREE.Vector3(data.x, data.y, data.z),
+            targetRot: data.ry,
+            data: data
         };
-        
-        console.log("Player joined:", data.username);
-        addFeedItem(`${data.username} joined`);
+        addFeedItem(data.username + " connected");
     }
 
-    // --- GAME LOGIC ---
-    function updatePlayer(dt) {
-        if(localPlayer.isDead) return;
-
-        const mesh = localPlayer.mesh;
-        
-        // Rotation (Horizontal)
-        mesh.rotation.y -= inputs.look.x * GAME_CONFIG.SENSITIVITY;
-        
-        // Rotation (Vertical - Camera Pivot)
-        const head = localPlayer.head;
-        head.rotation.x -= inputs.look.y * GAME_CONFIG.SENSITIVITY;
-        head.rotation.x = Math.max(-1.5, Math.min(1.5, head.rotation.x));
-
-        // Movement
-        const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), mesh.rotation.y);
-        const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), mesh.rotation.y);
-        
-        const moveVec = new THREE.Vector3();
-        // IMPORTANT: Invert Y for correct forward/backward movement mapping
-        moveVec.addScaledVector(forward, -inputs.move.y); 
-        moveVec.addScaledVector(right, inputs.move.x);
-        
-        if (moveVec.length() > 0) moveVec.normalize();
-
-        const speed = inputs.ads ? GAME_CONFIG.MOVE_SPEED * 0.5 : GAME_CONFIG.MOVE_SPEED;
-        
-        localPlayer.velocity.x = moveVec.x * speed;
-        localPlayer.velocity.z = moveVec.z * speed;
-
-        // Walking Animation (Simple Sine Wave)
-        const isMoving = moveVec.lengthSq() > 0.01;
-        if (isMoving && localPlayer.parts.leftLeg) {
-            const time = Date.now() * 0.01;
-            localPlayer.parts.leftLeg.rotation.x = Math.sin(time) * 0.5;
-            localPlayer.parts.rightLeg.rotation.x = Math.sin(time + Math.PI) * 0.5;
-            localPlayer.parts.leftArm.rotation.x = Math.sin(time + Math.PI) * 0.5; // Opposite to leg
-        } else if (localPlayer.parts.leftLeg) {
-            // Reset Pose
-            localPlayer.parts.leftLeg.rotation.x = 0;
-            localPlayer.parts.rightLeg.rotation.x = 0;
-            localPlayer.parts.leftArm.rotation.x = 0;
-        }
-
-        // Gravity & Jump
-        localPlayer.velocity.y -= GAME_CONFIG.GRAVITY * dt;
-        
-        if (localPlayer.isGrounded && inputs.jump) {
-            localPlayer.velocity.y = GAME_CONFIG.JUMP_FORCE;
-            localPlayer.isGrounded = false;
-            inputs.jump = false; // Consume jump
-            playSound('jump');
-        }
-
-        // Apply Position
-        mesh.position.addScaledVector(localPlayer.velocity, dt);
-
-        // Simple Floor Collision
-        if (mesh.position.y < 0) {
-            mesh.position.y = 0;
-            localPlayer.velocity.y = 0;
-            localPlayer.isGrounded = true;
-        }
-
-        // Camera Logic (TPS)
-        const camDist = inputs.ads ? 1.5 : 4;
-        const camHeight = inputs.ads ? 0 : 0.5;
-        const camSide = inputs.ads ? 0.4 : 1.5; // Shoulder view
-
-        camera.position.set(camSide, camHeight, camDist);
+    // --- NETWORKING ---
+    function showStatus(msg) {
+        document.getElementById('status-msg').innerText = msg;
     }
 
-    function shoot() {
-        if (!isGameActive || localPlayer.isDead) return;
-        
-        const now = Date.now();
-        if (now - localPlayer.lastShot < GAME_CONFIG.WEAPON.fireRate) return;
-        if (localPlayer.ammo <= 0) return;
+    function joinGame() {
+        const input = document.getElementById('username-input');
+        if(!input.value) return input.focus();
+        username = input.value;
+        localStorage.setItem('polyfire_username', username);
 
-        localPlayer.lastShot = now;
-        localPlayer.ammo--;
-        updateAmmoUI();
-        playSound('shoot');
+        const btn = document.getElementById('btn-join');
+        btn.disabled = true;
+        btn.innerText = "CONNECTING...";
+        showStatus("Authenticating...");
 
-        // Raycast
-        const raycaster = new THREE.Raycaster();
-        // Shoot from camera center
-        raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-
-        // Get objects to hit (remote players + map)
-        const hitObjects = [];
-        Object.values(remotePlayers).forEach(p => {
-             // Add all parts of the group to raycast
-             p.mesh.children.forEach(child => hitObjects.push(child)); 
+        // Try Anon Auth
+        signInAnonymously(auth).then(() => {
+            showStatus("Auth Success. Connecting to Game Server...");
+        }).catch(error => {
+            console.error(error);
+            showStatus("Auth Error: " + error.message + ". Check Firebase Console > Auth > Sign-in method.");
+            btn.disabled = false;
+            btn.innerText = "CONNECT";
         });
-        colliders.forEach(c => hitObjects.push(c));
 
-        const intersects = raycaster.intersectObjects(hitObjects);
-
-        if (intersects.length > 0) {
-            const hit = intersects[0];
-            const obj = hit.object;
-
-            // Visual Trace
-            createBulletTrace(localPlayer.head.getWorldPosition(new THREE.Vector3()), hit.point);
-
-            // Traverse up/check userData
-            let currentObj = obj;
-            let targetId = null;
-            let isHeadshot = false;
-
-            // Check specific hit part first
-            if (currentObj.userData && currentObj.userData.part === 'head') isHeadshot = true;
-            // Now any part (arm/leg) should have ID because we traversed in createRemotePlayer
-            if (currentObj.userData && currentObj.userData.id) targetId = currentObj.userData.id;
-
-            // Deal Damage
-            if (targetId) {
-                const dmg = isHeadshot ? GAME_CONFIG.WEAPON.damageHead : GAME_CONFIG.WEAPON.damageBody;
-                showHitMarker();
-                if(isHeadshot) console.log("HEADSHOT!");
-                dealDamage(targetId, dmg);
-            }
-        } else {
-            // Missed shot trace
-            const ray = raycaster.ray;
-            const target = ray.at(50, new THREE.Vector3());
-            createBulletTrace(localPlayer.head.getWorldPosition(new THREE.Vector3()), target);
-        }
-    }
-
-    function createBulletTrace(start, end) {
-        const points = [start, end];
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const material = new THREE.LineBasicMaterial({ color: 0xffff00 });
-        const line = new THREE.Line(geometry, material);
-        scene.add(line);
-        
-        setTimeout(() => {
-            scene.remove(line);
-            geometry.dispose();
-            material.dispose();
-        }, 50);
-    }
-
-    function showHitMarker() {
-        const marker = document.getElementById('hit-marker');
-        marker.style.opacity = 1;
-        playSound('hit');
-        setTimeout(() => marker.style.opacity = 0, 100);
-    }
-
-    function updateAmmoUI() {
-        document.getElementById('ammo-display').innerText = `${localPlayer.ammo} / ∞`;
-    }
-
-    function updateHealthUI() {
-        const fill = document.getElementById('health-fill');
-        const text = document.getElementById('health-text');
-        const pct = (localPlayer.hp / GAME_CONFIG.MAX_HP) * 100;
-        fill.style.width = `${pct}%`;
-        text.innerText = `${localPlayer.hp} HP`;
-        
-        if (pct < 30) fill.style.background = 'red';
-        else fill.style.background = 'linear-gradient(90deg, #ff5252, #ff1744)';
-    }
-
-    function addFeedItem(msg) {
-        const feed = document.getElementById('kill-feed');
-        const item = document.createElement('div');
-        item.className = 'feed-item';
-        item.innerText = msg;
-        feed.appendChild(item);
-        if (feed.children.length > 5) feed.removeChild(feed.children[0]);
-    }
-
-    // --- NETWORK LOGIC ---
-    async function joinGame() {
-        const nameInput = document.getElementById('username-input');
-        // Removed explicit room input
-
-        if (!nameInput.value.trim()) {
-            alert("Please enter your name to start!");
-            nameInput.focus();
-            return;
-        }
-
-        username = nameInput.value.trim();
-        localStorage.setItem('polyfire_username', username); // Save name for next time
-        
-        roomId = "GlobalArena"; // Hardcoded to single lobby
-
-        // Initialize audio on user gesture
-        if (!audioCtx) {
-            try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            } catch(e) { console.warn("Audio init failed", e); }
-        }
-        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-
-        // Attempt Fullscreen & Orientation Lock
-        try {
-            if (document.documentElement.requestFullscreen) {
-                await document.documentElement.requestFullscreen();
-            }
-            if (screen.orientation && screen.orientation.lock) {
-                await screen.orientation.lock("landscape");
-            }
-        } catch (e) {
-            console.log("Fullscreen/Orientation lock not supported or denied", e);
-        }
-
-        document.getElementById('lobby-screen').style.display = 'none';
-        document.getElementById('hud').style.display = 'block';
-        document.getElementById('controls-layer').style.display = 'block';
-
-        init3D();
-
-        // Auth
-        await signInAnonymously(auth);
-        
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
+        onAuthStateChanged(auth, user => {
+            if(user) {
                 localPlayerId = user.uid;
-                
-                // UPDATED: Set initial HP explicitly on join
-                const myRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomId, 'players', localPlayerId);
-                setDoc(myRef, { 
-                    hp: GAME_CONFIG.MAX_HP,
-                    username: username,
-                    color: localPlayer.color
-                }, { merge: true });
+                connectToRealtimeDB();
+            }
+        });
+    }
 
-                startNetworkLoop();
+    function connectToRealtimeDB() {
+        const playersRef = ref(db, 'players');
+        const myRef = ref(db, 'players/' + localPlayerId);
+        
+        // Monitor Connection
+        const connectedRef = ref(db, '.info/connected');
+        onValue(connectedRef, (snap) => {
+            if (snap.val() === true) {
+                console.log("Connected to RTDB");
+                showStatus("Connected!");
+                document.getElementById('lobby-screen').style.display = 'none';
+                document.getElementById('hud').style.display = 'block';
+                document.getElementById('controls-layer').style.display = 'block';
+                
+                // Set Up Player
+                init3D();
+                initInputs();
                 startRenderLoop();
                 isGameActive = true;
+
+                onDisconnect(myRef).remove(); 
+                set(myRef, {
+                    username: username,
+                    color: localPlayer.color,
+                    hp: 100,
+                    x: 0, y: 0, z: 0, ry: 0,
+                    lastFired: 0
+                }).catch(e => {
+                    console.error("Write failed: ", e);
+                    alert("Database Write Failed! Check Firebase Rules.");
+                });
+
+            } else {
+                showStatus("Connecting to Database...");
             }
         });
-    }
 
-    function startNetworkLoop() {
-        const roomRef = collection(db, 'artifacts', appId, 'public', 'data', 'rooms', roomId, 'players');
-        const myRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomId, 'players', localPlayerId);
-
-        // 1. Send Loop
-        setInterval(async () => {
-            if (!localPlayerId || localPlayer.isDead) return;
+        // Listen for World Updates
+        onValue(playersRef, (snapshot) => {
+            const players = snapshot.val() || {};
             
-            const pos = localPlayer.mesh.position;
-            const rot = localPlayer.mesh.rotation.y;
-            const headRot = localPlayer.head.rotation.x;
-
-            try {
-                await setDoc(myRef, {
-                    username: username,
-                    x: Number(pos.x.toFixed(2)),
-                    y: Number(pos.y.toFixed(2)),
-                    z: Number(pos.z.toFixed(2)),
-                    ry: Number(rot.toFixed(2)),
-                    hr: Number(headRot.toFixed(2)),
-                    color: localPlayer.color, 
-                    // UPDATED: Removed 'hp' from here so we don't overwrite damage
-                    lastFired: localPlayer.lastShot, // Sync shooting time
-                    ts: serverTimestamp()
-                }, { merge: true });
-            } catch (e) {
-                // Silent fail on network blip
-            }
-        }, GAME_CONFIG.SYNC_RATE);
-
-        // 2. Listen Loop
-        onSnapshot(roomRef, (snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                const data = change.doc.data();
-                const pid = change.doc.id;
-                
-                if (pid === localPlayerId) {
-                    // Check if *server* thinks I took damage
-                    // We simply check if server HP is lower than local HP
-                    if (data.hp !== undefined && data.hp < localPlayer.hp) {
-                        localPlayer.hp = data.hp;
+            Object.keys(players).forEach(key => {
+                if (key === localPlayerId) {
+                    const myData = players[key];
+                    if (myData.hp < localPlayer.hp) {
+                        localPlayer.hp = myData.hp;
                         updateHealthUI();
-                        playSound('hit'); 
-                        
-                        if (localPlayer.hp <= 0 && !localPlayer.isDead) {
-                            die(data.lastAttacker);
-                        }
+                        playSound('hit');
+                        if(localPlayer.hp <= 0 && !localPlayer.isDead) die(myData.lastAttacker);
                     }
                     return;
                 }
 
-                if (change.type === "added") {
-                    createRemotePlayer(pid, data);
+                const pData = players[key];
+                if (!remotePlayers[key]) {
+                    createRemotePlayer(key, pData);
+                } else {
+                    const rp = remotePlayers[key];
+                    rp.targetPos.set(pData.x, pData.y, pData.z);
+                    rp.targetRot = pData.ry;
+                    
+                    if (pData.lastFired > (rp.data.lastFired || 0)) {
+                        playSound('shoot');
+                        const origin = new THREE.Vector3(pData.x, pData.y + 1.2, pData.z); 
+                        const direction = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0,1,0), pData.ry);
+                        const target = origin.clone().add(direction.multiplyScalar(50));
+                        createBulletTrace(origin, target);
+                    }
+                    rp.data = pData;
                 }
-                if (change.type === "modified") {
-                    if (remotePlayers[pid]) {
-                        const p = remotePlayers[pid];
-                        
-                        // Safety check for valid coordinates to prevent freezing
-                        if (data.x !== undefined && !isNaN(data.x)) {
-                            p.targetPos.set(data.x, data.y, data.z);
-                            // TELEPORT FIX: If lag causes a large jump, snap immediately
-                            if (p.mesh.position.distanceTo(p.targetPos) > 5) {
-                                p.mesh.position.copy(p.targetPos);
-                            }
-                        }
-                        
-                        p.mesh.rotation.y = data.ry;
-                        
-                        // Check if opponent fired
-                        if (data.lastFired && data.lastFired > p.lastFired) {
-                             p.lastFired = data.lastFired;
-                             playSound('shoot'); // Play remote shot sound
-                             // Visual trace from their gun (approximated from body position + rotation)
-                             const gunOffset = new THREE.Vector3(0.5, 1.0, 0.5).applyAxisAngle(new THREE.Vector3(0,1,0), data.ry);
-                             const start = new THREE.Vector3(data.x, data.y, data.z).add(gunOffset);
-                             const forward = new THREE.Vector3(0,0,1).applyAxisAngle(new THREE.Vector3(0,1,0), data.ry);
-                             // Slight random spread for visual flair
-                             const end = start.clone().add(forward.multiplyScalar(20));
-                             createBulletTrace(start, end);
-                        }
+            });
 
-                        p.data = data;
-                    }
-                }
-                if (change.type === "removed") {
-                    if (remotePlayers[pid]) {
-                        scene.remove(remotePlayers[pid].mesh);
-                        delete remotePlayers[pid];
-                        addFeedItem("Player left");
-                    }
+            Object.keys(remotePlayers).forEach(key => {
+                if (!players[key]) {
+                    scene.remove(remotePlayers[key].mesh);
+                    delete remotePlayers[key];
+                    addFeedItem("Player left");
                 }
             });
         });
-    }
 
-    async function dealDamage(targetId, amount) {
-        // Fetch target current HP first to ensure consistency (basic)
-        const targetRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomId, 'players', targetId);
-
-        try {
-            // ATOMIC INCREMENT: More reliable on mobile networks
-            await updateDoc(targetRef, {
-                hp: increment(-amount),
-                dmgEvent: Date.now(),
-                lastAttacker: username
-            });
-            // We do not check hp here, we wait for the listener to update the victim
-            // or the victim to die.
+        // Send Updates
+        setInterval(() => {
+            if(!isGameActive || localPlayer.isDead) return;
             
-            // To be optimistic, we could visually show damage numbers here?
-            // For now, hit marker is enough.
-
-        } catch(e) { console.log("Error dealing damage:", e); }
+            update(myRef, {
+                x: Number(localPlayer.mesh.position.x.toFixed(2)),
+                y: Number(localPlayer.mesh.position.y.toFixed(2)),
+                z: Number(localPlayer.mesh.position.z.toFixed(2)),
+                ry: Number(localPlayer.mesh.rotation.y.toFixed(2)),
+                lastFired: localPlayer.lastShot
+            }).catch(e => {
+                // Silent catch, usually auth/rules issue
+            });
+        }, 80);
     }
 
-    function die(killerName) {
+    // --- ACTIONS ---
+    async function shoot() {
+        const now = Date.now();
+        if (now - localPlayer.lastShot < GAME_CONFIG.WEAPON.fireRate) return;
+        localPlayer.lastShot = now; 
+        playSound('shoot');
+
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
+        
+        const targets = [];
+        Object.values(remotePlayers).forEach(rp => {
+            rp.mesh.traverse(c => { if(c.isMesh) targets.push(c); });
+        });
+        colliders.forEach(c => targets.push(c));
+
+        const intersects = raycaster.intersectObjects(targets);
+        const start = localPlayer.head.getWorldPosition(new THREE.Vector3());
+        let end = raycaster.ray.at(100, new THREE.Vector3());
+
+        if (intersects.length > 0) {
+            const hit = intersects[0];
+            end = hit.point;
+            const obj = hit.object;
+
+            if (obj.userData.id) {
+                const isHead = obj.userData.part === 'head';
+                const dmg = isHead ? GAME_CONFIG.WEAPON.damageHead : GAME_CONFIG.WEAPON.damageBody;
+                
+                showHitMarker();
+                if(isHead) console.log("HEADSHOT");
+
+                const victimRef = ref(db, 'players/' + obj.userData.id);
+                get(child(victimRef, 'hp')).then((snap) => {
+                    if(snap.exists()) {
+                        const currentHp = snap.val();
+                        update(victimRef, { 
+                            hp: currentHp - dmg,
+                            lastAttacker: username
+                        });
+                    }
+                });
+            }
+        }
+        createBulletTrace(start, end);
+    }
+
+    function createBulletTrace(start, end) {
+        const geom = new THREE.BufferGeometry().setFromPoints([start, end]);
+        const line = new THREE.Line(geom, new THREE.LineBasicMaterial({ color: 0xffff00 }));
+        scene.add(line);
+        setTimeout(() => { scene.remove(line); geom.dispose(); }, 50);
+    }
+
+    function showHitMarker() {
+        const el = document.getElementById('hit-marker');
+        el.style.opacity = 1;
+        playSound('hit');
+        setTimeout(() => el.style.opacity = 0, 100);
+    }
+
+    function updateHealthUI() {
+        const pct = Math.max(0, (localPlayer.hp / GAME_CONFIG.MAX_HP) * 100);
+        document.getElementById('health-fill').style.width = pct + '%';
+    }
+
+    function addFeedItem(text) {
+        const div = document.createElement('div');
+        div.className = 'feed-item';
+        div.innerText = text;
+        document.getElementById('kill-feed').prepend(div);
+        if(document.getElementById('kill-feed').children.length > 4) 
+            document.getElementById('kill-feed').lastChild.remove();
+    }
+
+    function die(killer) {
         localPlayer.isDead = true;
         document.getElementById('respawn-screen').style.display = 'flex';
-        document.getElementById('killer-msg').innerText = `Eliminated by ${killerName || "Enemy"}`;
-        
-        // Disable controls
+        document.getElementById('killer-msg').innerText = `Eliminated by ${killer || "Enemy"}`;
         document.getElementById('controls-layer').style.display = 'none';
-
-        // Respawn timer
+        
         let cd = 5;
         const btn = document.getElementById('btn-respawn');
         btn.disabled = true;
-        const interval = setInterval(() => {
-            cd--;
-            btn.innerText = `RESPAWN (${cd}s)`;
-            if (cd <= 0) {
-                clearInterval(interval);
-                btn.disabled = false;
-                btn.innerText = "RESPAWN NOW";
-                btn.onclick = respawn;
-            }
+        const iv = setInterval(() => {
+            cd--; btn.innerText = `RESPAWN (${cd}s)`;
+            if(cd<=0) { clearInterval(iv); btn.disabled=false; btn.innerText="DEPLOY"; btn.onclick=respawn; }
         }, 1000);
     }
 
     function respawn() {
         localPlayer.isDead = false;
         localPlayer.hp = GAME_CONFIG.MAX_HP;
-        localPlayer.ammo = GAME_CONFIG.WEAPON.ammo;
         updateHealthUI();
-        updateAmmoUI();
-
-        // Random spawn pos
-        localPlayer.mesh.position.set((Math.random()-0.5)*50, 0, (Math.random()-0.5)*50);
-        
+        const x = (Math.random()-0.5)*100;
+        const z = (Math.random()-0.5)*100;
+        localPlayer.mesh.position.set(x, 0, z);
+        update(ref(db, 'players/'+localPlayerId), { hp: 100, x, z });
         document.getElementById('respawn-screen').style.display = 'none';
         document.getElementById('controls-layer').style.display = 'block';
-
-        // Update DB
-        const myRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomId, 'players', localPlayerId);
-        updateDoc(myRef, { hp: 200 });
     }
 
-    // --- INPUT HANDLING (PC & Touch) ---
+    // --- GAME LOOP ---
+    function updatePlayer(dt) {
+        if(localPlayer.isDead) return;
+        const mesh = localPlayer.mesh;
+
+        mesh.rotation.y -= inputs.look.x * GAME_CONFIG.SENSITIVITY;
+        const head = localPlayer.head;
+        head.rotation.x -= inputs.look.y * GAME_CONFIG.SENSITIVITY;
+        head.rotation.x = Math.max(-1.5, Math.min(1.5, head.rotation.x));
+
+        const fwd = new THREE.Vector3(0,0,-1).applyAxisAngle(new THREE.Vector3(0,1,0), mesh.rotation.y);
+        const right = new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0), mesh.rotation.y);
+        
+        const move = new THREE.Vector3();
+        move.addScaledVector(fwd, -inputs.move.y);
+        move.addScaledVector(right, inputs.move.x);
+        if(move.length() > 0) move.normalize();
+
+        const speed = inputs.ads ? GAME_CONFIG.MOVE_SPEED/2 : GAME_CONFIG.MOVE_SPEED;
+        localPlayer.velocity.x = move.x * speed;
+        localPlayer.velocity.z = move.z * speed;
+        localPlayer.velocity.y -= GAME_CONFIG.GRAVITY * dt;
+
+        if(localPlayer.isGrounded && inputs.jump) {
+            localPlayer.velocity.y = GAME_CONFIG.JUMP_FORCE;
+            localPlayer.isGrounded = false;
+            inputs.jump = false;
+            playSound('jump');
+        }
+
+        mesh.position.addScaledVector(localPlayer.velocity, dt);
+        if(mesh.position.y < 0) { mesh.position.y=0; localPlayer.velocity.y=0; localPlayer.isGrounded=true; }
+
+        const camZ = inputs.ads ? 1.5 : 4;
+        const camX = inputs.ads ? 0.4 : 1.5;
+        camera.position.set(camX, 0.5, camZ);
+
+        const isMoving = move.lengthSq() > 0.1;
+        if(isMoving) {
+            const t = Date.now() * 0.015;
+            localPlayer.parts.lLeg.rotation.x = Math.sin(t)*0.6;
+            localPlayer.parts.rLeg.rotation.x = Math.sin(t+Math.PI)*0.6;
+        } else {
+            localPlayer.parts.lLeg.rotation.x = 0;
+            localPlayer.parts.rLeg.rotation.x = 0;
+        }
+    }
+
+    function startRenderLoop() {
+        const clock = new THREE.Clock();
+        const loop = () => {
+            requestAnimationFrame(loop);
+            const dt = Math.min(clock.getDelta(), 0.1);
+            updatePlayer(dt);
+            Object.values(remotePlayers).forEach(rp => {
+                rp.mesh.position.lerp(rp.targetPos, 0.2);
+                rp.mesh.rotation.y += (rp.targetRot - rp.mesh.rotation.y) * 0.2;
+                if(rp.mesh.position.distanceTo(rp.targetPos) > 0.1) {
+                    const t = Date.now() * 0.015;
+                    rp.parts.lLeg.rotation.x = Math.sin(t)*0.6;
+                    rp.parts.rLeg.rotation.x = Math.sin(t+Math.PI)*0.6;
+                }
+            });
+            if(inputs.fire) shoot();
+            if('ontouchstart' in window) {
+                inputs.look.x *= 0.6; inputs.look.y *= 0.6;
+            } else {
+                inputs.look.x *= 0.1; inputs.look.y *= 0.1; 
+            }
+            renderer.render(scene, camera);
+            document.getElementById('fps-counter').innerText = Math.round(1/dt);
+        };
+        loop();
+    }
+
     function initInputs() {
-        // --- PC CONTROLS (Pointer Lock & Mouse Look) ---
-        // Click to lock cursor
-        document.addEventListener('click', (e) => {
-            // Only lock if we are clicking on game container/canvas
-            if (e.target.id === 'game-container' || e.target.tagName === 'CANVAS') {
-                document.body.requestPointerLock();
+        document.addEventListener('click', e => {
+            if(e.target.id === 'game-container') document.body.requestPointerLock();
+        });
+        document.addEventListener('mousemove', e => {
+            if(document.pointerLockElement) {
+                inputs.look.x += e.movementX * 0.2; inputs.look.y += e.movementY * 0.2;
             }
         });
-
-        // Mouse Move Listener
-        document.addEventListener('mousemove', (e) => {
-            if (document.pointerLockElement === document.body) {
-                // Add to inputs.look directly. Dampening in update loop will handle smooth stop.
-                // We use a small multiplier to match touch sensitivity
-                inputs.look.x += e.movementX * 0.5; 
-                inputs.look.y += e.movementY * 0.5;
+        document.addEventListener('mousedown', e => {
+            if(document.pointerLockElement) {
+                if(e.button===0) inputs.fire=true; if(e.button===2) inputs.ads=true;
             }
         });
-
-        // Mouse Down/Up (Fire/ADS)
-        document.addEventListener('mousedown', (e) => {
-            if (document.pointerLockElement === document.body) {
-                if(e.button === 0) inputs.fire = true; // Left Click
-                if(e.button === 2) inputs.ads = true;  // Right Click
-            }
+        document.addEventListener('mouseup', e => {
+            if(e.button===0) inputs.fire=false; if(e.button===2) inputs.ads=false;
+        });
+        window.addEventListener('keydown', e => {
+            if(e.code==='KeyW') inputs.move.y = -1;
+            if(e.code==='KeyS') inputs.move.y = 1;
+            if(e.code==='KeyA') inputs.move.x = -1;
+            if(e.code==='KeyD') inputs.move.x = 1;
+            if(e.code==='Space') inputs.jump = true;
+        });
+        window.addEventListener('keyup', e => {
+            if(['KeyW','KeyS'].includes(e.code)) inputs.move.y = 0;
+            if(['KeyA','KeyD'].includes(e.code)) inputs.move.x = 0;
+            if(e.code==='Space') inputs.jump = false;
         });
 
-        document.addEventListener('mouseup', (e) => {
-            if(e.button === 0) inputs.fire = false;
-            if(e.button === 2) inputs.ads = false;
-        });
-
-        // Prevent context menu on right click
-        document.addEventListener('contextmenu', e => e.preventDefault());
-
-        // Keyboard (WASD)
-        window.addEventListener('keydown', (e) => {
-            // Use e.code to be layout independent
-            switch(e.code) {
-                case 'KeyW': inputs.move.y = -1; break; // Forward (Negative Y is forward in our logic now)
-                case 'KeyS': inputs.move.y = 1; break;  // Backward
-                case 'KeyA': inputs.move.x = -1; break; // Left
-                case 'KeyD': inputs.move.x = 1; break;  // Right
-                case 'Space': inputs.jump = true; break;
-                case 'KeyR': 
-                     localPlayer.ammo = GAME_CONFIG.WEAPON.ammo;
-                     updateAmmoUI();
-                     break;
-            }
-        });
-
-        window.addEventListener('keyup', (e) => {
-            switch(e.code) {
-                case 'KeyW': 
-                case 'KeyS': inputs.move.y = 0; break;
-                case 'KeyA': 
-                case 'KeyD': inputs.move.x = 0; break;
-                case 'Space': inputs.jump = false; break;
-            }
-        });
-
-        // --- TOUCH CONTROLS (Mobile Fallback) ---
-        // Joystick (Move)
         const zoneMove = document.getElementById('zone-move');
-        const stickBase = document.getElementById('joystick-base');
         const stick = document.getElementById('joystick-stick');
-        let moveTouchId = null;
-        let originX, originY;
+        const base = document.getElementById('joystick-base');
+        let moveId = null, startX, startY;
 
-        zoneMove.addEventListener('touchstart', (e) => {
+        zoneMove.addEventListener('touchstart', e => {
             e.preventDefault();
-            const touch = e.changedTouches[0];
-            moveTouchId = touch.identifier;
-            originX = touch.clientX;
-            originY = touch.clientY;
-
-            stickBase.style.display = 'block';
-            stickBase.style.left = (originX - 50) + 'px';
-            stickBase.style.top = (originY - 50) + 'px';
+            const t = e.changedTouches[0];
+            moveId = t.identifier; startX = t.clientX; startY = t.clientY;
+            base.style.display = 'block';
+            base.style.left = (startX-60)+'px'; base.style.top = (startY-60)+'px';
             stick.style.transform = `translate(-50%, -50%)`;
         });
-
-        zoneMove.addEventListener('touchmove', (e) => {
+        zoneMove.addEventListener('touchmove', e => {
             e.preventDefault();
             for(let i=0; i<e.changedTouches.length; i++) {
-                if(e.changedTouches[i].identifier === moveTouchId) {
-                    const touch = e.changedTouches[i];
-                    const dx = touch.clientX - originX;
-                    const dy = touch.clientY - originY;
-                    const dist = Math.min(Math.sqrt(dx*dx + dy*dy), 50);
+                if(e.changedTouches[i].identifier === moveId) {
+                    const t = e.changedTouches[i];
+                    const dx = t.clientX - startX; const dy = t.clientY - startY;
                     const angle = Math.atan2(dy, dx);
-                    
-                    const moveX = Math.cos(angle) * dist;
-                    const moveY = Math.sin(angle) * dist;
-
-                    stick.style.transform = `translate(calc(-50% + ${moveX}px), calc(-50% + ${moveY}px))`;
-                    
-                    inputs.move.x = moveX / 50;
-                    inputs.move.y = moveY / 50;
+                    const dist = Math.min(Math.hypot(dx, dy), 60);
+                    const mx = Math.cos(angle)*dist; const my = Math.sin(angle)*dist;
+                    stick.style.transform = `translate(calc(-50% + ${mx}px), calc(-50% + ${my}px))`;
+                    inputs.move.x = mx/60; inputs.move.y = my/60;
                 }
             }
         });
-
-        const endMove = (e) => {
-            e.preventDefault();
+        const endMove = e => {
             for(let i=0; i<e.changedTouches.length; i++) {
-                if(e.changedTouches[i].identifier === moveTouchId) {
-                    moveTouchId = null;
-                    stickBase.style.display = 'none';
-                    inputs.move.x = 0;
-                    inputs.move.y = 0;
+                if(e.changedTouches[i].identifier === moveId) {
+                    moveId = null; base.style.display = 'none'; inputs.move.x=0; inputs.move.y=0;
                 }
             }
         };
         zoneMove.addEventListener('touchend', endMove);
-        zoneMove.addEventListener('touchcancel', endMove);
 
-        // Aim (Look)
         const zoneAim = document.getElementById('zone-aim');
-        let aimTouchId = null;
-        let lastAimX, lastAimY;
-
-        zoneAim.addEventListener('touchstart', (e) => {
-            const touch = e.changedTouches[0];
-            // Ignore if touching a button
-            if (e.target.classList.contains('btn-action')) return;
-
-            aimTouchId = touch.identifier;
-            lastAimX = touch.clientX;
-            lastAimY = touch.clientY;
+        let aimId = null, lastAimX, lastAimY;
+        zoneAim.addEventListener('touchstart', e => {
+            if(e.target.classList.contains('btn-action')) return;
+            const t = e.changedTouches[0];
+            aimId = t.identifier; lastAimX = t.clientX; lastAimY = t.clientY;
         });
-
-        zoneAim.addEventListener('touchmove', (e) => {
-            // e.preventDefault();
+        zoneAim.addEventListener('touchmove', e => {
+            e.preventDefault(); 
             for(let i=0; i<e.changedTouches.length; i++) {
-                if(e.changedTouches[i].identifier === aimTouchId) {
-                    const touch = e.changedTouches[i];
-                    const dx = touch.clientX - lastAimX;
-                    const dy = touch.clientY - lastAimY;
-                    
-                    inputs.look.x = dx;
-                    inputs.look.y = dy;
-                    
-                    lastAimX = touch.clientX;
-                    lastAimY = touch.clientY;
+                if(e.changedTouches[i].identifier === aimId) {
+                    const t = e.changedTouches[i];
+                    inputs.look.x = t.clientX - lastAimX;
+                    inputs.look.y = t.clientY - lastAimY;
+                    lastAimX = t.clientX; lastAimY = t.clientY;
                 }
             }
         });
+        zoneAim.addEventListener('touchend', e => { aimId=null; });
 
-        const endAim = (e) => {
-            for(let i=0; i<e.changedTouches.length; i++) {
-                if(e.changedTouches[i].identifier === aimTouchId) {
-                    aimTouchId = null;
-                    inputs.look.x = 0;
-                    inputs.look.y = 0;
-                }
-            }
+        const bindBtn = (id, prop) => {
+            const el = document.getElementById(id);
+            el.addEventListener('touchstart', e=>{ e.preventDefault(); inputs[prop]=true; });
+            el.addEventListener('touchend', e=>{ e.preventDefault(); inputs[prop]=false; });
         };
-        zoneAim.addEventListener('touchend', endAim);
-        zoneAim.addEventListener('touchcancel', endAim);
-
-        // Buttons
-        document.getElementById('btn-fire').addEventListener('touchstart', (e) => { e.preventDefault(); inputs.fire = true; });
-        document.getElementById('btn-fire').addEventListener('touchend', (e) => { e.preventDefault(); inputs.fire = false; });
+        bindBtn('btn-fire', 'fire');
+        bindBtn('btn-jump', 'jump');
         
-        document.getElementById('btn-jump').addEventListener('touchstart', (e) => { e.preventDefault(); inputs.jump = true; });
-
-        document.getElementById('btn-scope').addEventListener('touchstart', (e) => { 
-            e.preventDefault(); 
-            inputs.ads = !inputs.ads; 
-            document.getElementById('btn-scope').style.background = inputs.ads ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.5)';
+        document.getElementById('btn-scope').addEventListener('touchstart', e=>{
+            e.preventDefault(); inputs.ads = !inputs.ads;
+            e.target.style.background = inputs.ads ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.4)';
+        });
+        document.getElementById('btn-reload').addEventListener('touchstart', e=>{
+            e.preventDefault(); localPlayer.ammo = GAME_CONFIG.WEAPON.ammo;
         });
         
-        document.getElementById('btn-reload').addEventListener('touchstart', (e) => { 
-            e.preventDefault(); 
-            localPlayer.ammo = GAME_CONFIG.WEAPON.ammo;
-            updateAmmoUI();
-        });
+        const saved = localStorage.getItem('polyfire_username');
+        if(saved) document.getElementById('username-input').value = saved;
+        document.getElementById('btn-join').onclick = joinGame;
     }
-
-    // --- MAIN LOOP ---
-    const clock = new THREE.Clock();
-
-    function startRenderLoop() {
-        // Animation Loop
-        const animate = () => {
-            requestAnimationFrame(animate);
-            
-            const dt = Math.min(clock.getDelta(), 0.1); // Cap dt
-
-            // Local Player
-            updatePlayer(dt);
-
-            // Remote Players (Interpolation)
-            Object.keys(remotePlayers).forEach(id => {
-                const p = remotePlayers[id];
-                p.mesh.position.lerp(p.targetPos, 0.1); // Smooth lerp
-                // p.mesh.rotation.y = THREE.MathUtils.lerp(p.mesh.rotation.y, p.targetRot, 0.1);
-            });
-
-            // Firing
-            if (inputs.fire) {
-                shoot();
-            }
-
-            // Input Reset (Mouse look delta needs reset every frame)
-            if (!('ontouchstart' in window)) {
-                // PC only logic if we added pointer lock, ignoring for mobile-first request
-            } else {
-                // Mobile look delta is instantaneous touchmove difference, 
-                // we consume it in updatePlayer, then zero it here?
-                // Actually, touchmove event fires continuously. 
-                // Better approach for smooth look:
-                inputs.look.x *= 0.5; // Dampen look
-                inputs.look.y *= 0.5; 
-            }
-
-            renderer.render(scene, camera);
-            
-            // Stats
-            document.getElementById('fps-counter').innerText = Math.round(1/dt);
-        };
-        animate();
-    }
-
-    // --- BOOTSTRAP ---
-    document.getElementById('btn-join').addEventListener('click', joinGame);
-    
-    // Load saved name
-    const savedName = localStorage.getItem('polyfire_username');
-    if (savedName) {
-        document.getElementById('username-input').value = savedName;
-    }
-
-    initInputs();
-
-    function onWindowResize() {
-        if(camera) {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-        }
-        if(renderer) {
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-    }
-
 </script>
 </body>
 </html>
