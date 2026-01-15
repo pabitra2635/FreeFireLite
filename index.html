@@ -970,6 +970,8 @@
         }
 
         username = nameInput.value.trim();
+        localStorage.setItem('polyfire_username', username); // Save name for next time
+        
         roomId = "GlobalArena"; // Hardcoded to single lobby
 
         // Initialize audio on user gesture
@@ -1390,6 +1392,13 @@
 
     // --- BOOTSTRAP ---
     document.getElementById('btn-join').addEventListener('click', joinGame);
+    
+    // Load saved name
+    const savedName = localStorage.getItem('polyfire_username');
+    if (savedName) {
+        document.getElementById('username-input').value = savedName;
+    }
+
     initInputs();
 
     function onWindowResize() {
