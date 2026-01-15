@@ -373,7 +373,6 @@
     </style>
     
     <!-- Dependencies -->
-    <!-- UPDATED: Using a newer version of Three.js (0.160.0) that supports CapsuleGeometry -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
 </head>
 <body>
@@ -497,6 +496,8 @@
     let camera, scene, renderer;
     let localPlayer = {
         mesh: null,
+        head: null,
+        parts: {}, // References to legs for animation
         velocity: new THREE.Vector3(),
         isGrounded: false,
         hp: GAME_CONFIG.MAX_HP,
@@ -505,7 +506,7 @@
         isDead: false
     };
     
-    const remotePlayers = {}; // id -> { mesh, targetPos, targetRot, lastUpdate }
+    const remotePlayers = {}; // id -> { mesh, parts: {}, targetPos, targetRot, lastUpdate }
     const bullets = [];
     const colliders = []; // Walls, floor
     
@@ -626,30 +627,94 @@
         window.addEventListener('resize', onWindowResize, false);
     }
 
-    function createLocalPlayer() {
-        // Player container (Pivot for Y rotation)
-        const pivot = new THREE.Group();
-        
-        // Body
-        // Use CapsuleGeometry - Requires Three.js > r137
-        const bodyGeo = new THREE.CapsuleGeometry(0.8, 2.5, 4, 8); 
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-        const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.position.y = 2.05;
-        body.castShadow = true;
-        body.userData = { type: 'body' };
-        
-        // Head (Camera pivot)
-        const headPivot = new THREE.Group();
-        headPivot.position.set(0, 3.8, 0);
+    // --- CHARACTER CREATION HELPERS ---
+    function createHumanoidModel(color) {
+        const group = new THREE.Group();
 
-        // Add meshes
-        pivot.add(body);
-        pivot.add(headPivot);
+        // Materials
+        const skinMat = new THREE.MeshStandardMaterial({ color: 0xffccaa }); // Skin
+        const shirtMat = new THREE.MeshStandardMaterial({ color: color }); // Shirt Color
+        const pantsMat = new THREE.MeshStandardMaterial({ color: 0x222222 }); // Dark pants
+
+        // Head
+        const headGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+        const head = new THREE.Mesh(headGeo, skinMat);
+        head.position.y = 1.65;
+        head.castShadow = true;
+        head.userData = { part: 'head' };
+        group.add(head);
+
+        // Torso
+        const torsoGeo = new THREE.BoxGeometry(0.6, 0.75, 0.3);
+        const torso = new THREE.Mesh(torsoGeo, shirtMat);
+        torso.position.y = 1.0;
+        torso.castShadow = true;
+        torso.userData = { part: 'body' };
+        group.add(torso);
+
+        // Arms
+        const armGeo = new THREE.BoxGeometry(0.18, 0.7, 0.18);
         
-        scene.add(pivot);
-        localPlayer.mesh = pivot;
-        localPlayer.head = headPivot;
+        const leftArm = new THREE.Mesh(armGeo, skinMat);
+        leftArm.position.set(-0.4, 1.0, 0);
+        leftArm.castShadow = true;
+        group.add(leftArm);
+        
+        const rightArm = new THREE.Mesh(armGeo, skinMat);
+        rightArm.position.set(0.4, 1.0, 0);
+        rightArm.castShadow = true;
+        // Hold Gun Pose (Static for now)
+        rightArm.rotation.x = -0.5;
+        rightArm.position.z = 0.2;
+        group.add(rightArm);
+
+        // Legs
+        const legGeo = new THREE.BoxGeometry(0.22, 0.85, 0.22);
+        
+        const leftLeg = new THREE.Mesh(legGeo, pantsMat);
+        leftLeg.position.set(-0.15, 0.425, 0);
+        leftLeg.castShadow = true;
+        group.add(leftLeg);
+        
+        const rightLeg = new THREE.Mesh(legGeo, pantsMat);
+        rightLeg.position.set(0.15, 0.425, 0);
+        rightLeg.castShadow = true;
+        group.add(rightLeg);
+
+        // Gun
+        const gunGeo = new THREE.BoxGeometry(0.1, 0.1, 0.4);
+        const gunMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+        const gun = new THREE.Mesh(gunGeo, gunMat);
+        gun.position.set(0, -0.3, 0.2); // Attached to right arm
+        rightArm.add(gun);
+
+        return { 
+            mesh: group, 
+            head: head, 
+            torso: torso, 
+            leftLeg: leftLeg, 
+            rightLeg: rightLeg,
+            leftArm: leftArm,
+            rightArm: rightArm
+        };
+    }
+
+    function createLocalPlayer() {
+        // Create model
+        const character = createHumanoidModel(0x00ff00); // Green for local
+        
+        // Setup references
+        localPlayer.mesh = character.mesh;
+        localPlayer.head = character.head;
+        localPlayer.parts = {
+            leftLeg: character.leftLeg,
+            rightLeg: character.rightLeg,
+            leftArm: character.leftArm,
+            rightArm: character.rightArm
+        };
+
+        // Add to scene
+        scene.add(localPlayer.mesh);
         
         // Attach camera to head but offset
         localPlayer.head.add(camera);
@@ -657,36 +722,20 @@
     }
 
     function createRemotePlayer(id, data) {
-        const group = new THREE.Group();
+        const character = createHumanoidModel(0xff0000); // Red for enemies
 
-        // Body
-        const bodyGeo = new THREE.BoxGeometry(1.6, 2.5, 1);
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-        const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.position.y = 2.05;
-        body.castShadow = true;
-        body.name = id; // For raycasting
-        body.userData = { id: id, part: 'body' };
-
-        // Head
-        const headGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-        const headMat = new THREE.MeshStandardMaterial({ color: 0xffaaaa });
-        const head = new THREE.Mesh(headGeo, headMat);
-        head.position.y = 3.8;
-        head.castShadow = true;
-        head.name = id;
-        head.userData = { id: id, part: 'head' };
-
-        // Username Label
-        // (Sprite logic omitted for brevity, using colored boxes)
-
-        group.add(body);
-        group.add(head);
+        character.head.userData.id = id;
+        character.torso.userData.id = id;
         
-        scene.add(group);
+        // Add to scene
+        scene.add(character.mesh);
         
         remotePlayers[id] = {
-            mesh: group,
+            mesh: character.mesh,
+            parts: {
+                leftLeg: character.leftLeg,
+                rightLeg: character.rightLeg
+            },
             targetPos: new THREE.Vector3(),
             targetRot: new THREE.Quaternion(),
             data: data
@@ -715,7 +764,7 @@
         const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), mesh.rotation.y);
         
         const moveVec = new THREE.Vector3();
-        moveVec.addScaledVector(forward, inputs.move.y); // Joystick Y is inverted in calculation usually
+        moveVec.addScaledVector(forward, inputs.move.y); 
         moveVec.addScaledVector(right, inputs.move.x);
         
         if (moveVec.length() > 0) moveVec.normalize();
@@ -724,6 +773,20 @@
         
         localPlayer.velocity.x = moveVec.x * speed;
         localPlayer.velocity.z = moveVec.z * speed;
+
+        // Walking Animation (Simple Sine Wave)
+        const isMoving = moveVec.lengthSq() > 0.01;
+        if (isMoving && localPlayer.parts.leftLeg) {
+            const time = Date.now() * 0.01;
+            localPlayer.parts.leftLeg.rotation.x = Math.sin(time) * 0.5;
+            localPlayer.parts.rightLeg.rotation.x = Math.sin(time + Math.PI) * 0.5;
+            localPlayer.parts.leftArm.rotation.x = Math.sin(time + Math.PI) * 0.5; // Opposite to leg
+        } else if (localPlayer.parts.leftLeg) {
+            // Reset Pose
+            localPlayer.parts.leftLeg.rotation.x = 0;
+            localPlayer.parts.rightLeg.rotation.x = 0;
+            localPlayer.parts.leftArm.rotation.x = 0;
+        }
 
         // Gravity & Jump
         localPlayer.velocity.y -= GAME_CONFIG.GRAVITY * dt;
@@ -772,7 +835,10 @@
 
         // Get objects to hit (remote players + map)
         const hitObjects = [];
-        Object.values(remotePlayers).forEach(p => hitObjects.push(p.mesh.children[0], p.mesh.children[1])); // Body and Head
+        Object.values(remotePlayers).forEach(p => {
+             // Add all parts of the group to raycast
+             p.mesh.children.forEach(child => hitObjects.push(child)); 
+        });
         colliders.forEach(c => hitObjects.push(c));
 
         const intersects = raycaster.intersectObjects(hitObjects);
@@ -784,17 +850,20 @@
             // Visual Trace
             createBulletTrace(localPlayer.head.getWorldPosition(new THREE.Vector3()), hit.point);
 
-            if (obj.userData && obj.userData.id) {
-                // We hit a player!
-                const targetId = obj.userData.id;
-                const isHeadshot = obj.userData.part === 'head';
-                const dmg = isHeadshot ? GAME_CONFIG.WEAPON.damageHead : GAME_CONFIG.WEAPON.damageBody;
+            // Traverse up to find the user ID (since we might hit the arm/leg inside the group)
+            let currentObj = obj;
+            let targetId = null;
+            let isHeadshot = false;
 
+            // Check specific hit part first
+            if (currentObj.userData && currentObj.userData.part === 'head') isHeadshot = true;
+            if (currentObj.userData && currentObj.userData.id) targetId = currentObj.userData.id;
+
+            // Deal Damage
+            if (targetId) {
+                const dmg = isHeadshot ? GAME_CONFIG.WEAPON.damageHead : GAME_CONFIG.WEAPON.damageBody;
                 showHitMarker();
                 if(isHeadshot) console.log("HEADSHOT!");
-
-                // Optimistic UI update? No, just send dmg to server/victim
-                // Note: In a real secure game, server validates. Here we trust client.
                 dealDamage(targetId, dmg);
             }
         } else {
@@ -957,6 +1026,9 @@
                         // p.targetRot.setFromEuler(new THREE.Euler(0, data.ry, 0)); // Only Y
                         p.mesh.rotation.y = data.ry; // Snap rotation for now
                         p.data = data;
+                        
+                        // Simple animation for remote players: if they moved far enough since last frame, animate legs
+                        // (Requires storing previous pos, omitted for simplicity, they will just slide for now)
                     }
                 }
                 if (change.type === "removed") {
