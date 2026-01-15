@@ -1006,6 +1006,15 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 localPlayerId = user.uid;
+                
+                // UPDATED: Set initial HP explicitly on join
+                const myRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomId, 'players', localPlayerId);
+                setDoc(myRef, { 
+                    hp: GAME_CONFIG.MAX_HP,
+                    username: username,
+                    color: localPlayer.color
+                }, { merge: true });
+
                 startNetworkLoop();
                 startRenderLoop();
                 isGameActive = true;
@@ -1034,7 +1043,7 @@
                     ry: Number(rot.toFixed(2)),
                     hr: Number(headRot.toFixed(2)),
                     color: localPlayer.color, 
-                    hp: localPlayer.hp,
+                    // UPDATED: Removed 'hp' from here so we don't overwrite damage
                     lastFired: localPlayer.lastShot, // Sync shooting time
                     ts: serverTimestamp()
                 }, { merge: true });
@@ -1051,15 +1060,14 @@
                 
                 if (pid === localPlayerId) {
                     // Check if *server* thinks I took damage
-                    if (data.dmgEvent) {
-                        if (data.hp < localPlayer.hp) {
-                            localPlayer.hp = data.hp;
-                            updateHealthUI();
-                            playSound('hit'); 
-                            
-                            if (localPlayer.hp <= 0 && !localPlayer.isDead) {
-                                die(data.lastAttacker);
-                            }
+                    // We simply check if server HP is lower than local HP
+                    if (data.hp !== undefined && data.hp < localPlayer.hp) {
+                        localPlayer.hp = data.hp;
+                        updateHealthUI();
+                        playSound('hit'); 
+                        
+                        if (localPlayer.hp <= 0 && !localPlayer.isDead) {
+                            die(data.lastAttacker);
                         }
                     }
                     return;
