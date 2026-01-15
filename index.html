@@ -672,7 +672,8 @@
         const head = new THREE.Mesh(headGeo, skinMat);
         head.position.y = 1.65;
         head.castShadow = true;
-        head.userData = { part: 'head' };
+        // Mark as head for damage logic, but wait for ID assignment
+        head.userData = { part: 'head' }; 
         group.add(head);
 
         // Torso
@@ -757,9 +758,17 @@
         const color = data.color || 0xff0000;
         const character = createHumanoidModel(color);
 
-        character.head.userData.id = id;
-        character.torso.userData.id = id;
+        // CRITICAL FIX: Tag ALL meshes in the group with the user ID
+        // This ensures shots to arms/legs still register as hitting 'this player'
+        character.mesh.traverse((child) => {
+            if (child.isMesh) {
+                child.userData.id = id;
+            }
+        });
         
+        // Re-apply specific body part tags if traverse overwrote them (though merge usually keeps props)
+        character.head.userData.part = 'head'; // Ensure headshot logic still works
+
         // Add Name Label
         const label = createNameLabel(data.username || "Unknown");
         character.mesh.add(label);
@@ -889,13 +898,14 @@
             // Visual Trace
             createBulletTrace(localPlayer.head.getWorldPosition(new THREE.Vector3()), hit.point);
 
-            // Traverse up to find the user ID (since we might hit the arm/leg inside the group)
+            // Traverse up/check userData
             let currentObj = obj;
             let targetId = null;
             let isHeadshot = false;
 
             // Check specific hit part first
             if (currentObj.userData && currentObj.userData.part === 'head') isHeadshot = true;
+            // Now any part (arm/leg) should have ID because we traversed in createRemotePlayer
             if (currentObj.userData && currentObj.userData.id) targetId = currentObj.userData.id;
 
             // Deal Damage
@@ -1079,7 +1089,16 @@
                 if (change.type === "modified") {
                     if (remotePlayers[pid]) {
                         const p = remotePlayers[pid];
-                        p.targetPos.set(data.x, data.y, data.z);
+                        
+                        // Safety check for valid coordinates to prevent freezing
+                        if (data.x !== undefined && !isNaN(data.x)) {
+                            p.targetPos.set(data.x, data.y, data.z);
+                            // TELEPORT FIX: If lag causes a large jump, snap immediately
+                            if (p.mesh.position.distanceTo(p.targetPos) > 5) {
+                                p.mesh.position.copy(p.targetPos);
+                            }
+                        }
+                        
                         p.mesh.rotation.y = data.ry;
                         
                         // Check if opponent fired
